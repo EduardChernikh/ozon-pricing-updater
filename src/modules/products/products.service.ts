@@ -13,7 +13,7 @@ export class ProductsService {
 
   async updateProducts(dto: CreateProductDto) {
     let bulkOps: any[] = [];
-    dto.articles.forEach(item => {
+    dto.products.forEach(item => {
       bulkOps.push({
         updateOne: {
           filter: { article: item.article },
