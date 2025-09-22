@@ -9,16 +9,6 @@ $$RAW_PRICES$$
 
 $$ARTICLES$$
 
-iPhone SE 2022 128 Black
-iPhone SE 2022 128 Red
-iPhone SE 2022 128 White
-iPhone SE 2022 256 Black
-iPhone SE 2022 256 Red
-iPhone SE 2022 256 White
-iPhone SE 2022 64 Black
-iPhone SE 2022 64 Red
-iPhone SE 2022 64 White
-
 ========= END AVAILABLE ARTICLES LIST =========
 
 Please extract relevant information and fill in the following JSON fields. Do not use markdown or any other formatting — just plain JSON. Reply **only** with a JSON object and no additional text. If there is a duplicate for the same model use one with the highest price. Ignore items that is not have article from "AVAILABLE ARTICLES LIST" list.
