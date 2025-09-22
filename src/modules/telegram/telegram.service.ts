@@ -72,9 +72,6 @@ export class TelegramService implements OnModuleInit {
       }
     });
 
-    console.clear();
-    console.log(result.text)
-
     result = result.text;
     result = result.replace('```json', '');
     result = result.replace('```', '');
