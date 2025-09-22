@@ -45,6 +45,7 @@ export class TelegramService implements OnModuleInit {
 
   async onText(ctx: any): Promise<void> {
     const messageText = ctx.message.text;
+    const chatId = ctx.chat.id;
 
     if(messageText.includes('/start')) {
       return;
@@ -97,6 +98,6 @@ export class TelegramService implements OnModuleInit {
     await this.productsRepo.bulkWrite(bulkOps);
 
 
-    ctx.reply('Готово.');
+    await this.bot.telegram.sendMessage(chatId, messageText);
   }
 }
