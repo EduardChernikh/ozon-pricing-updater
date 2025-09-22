@@ -10,6 +10,9 @@ export class Product {
   @Prop({type: String, required: true, unique: true, index: true, trim: true})
   article: string;
 
+  @Prop({type: [String], default: []})
+  aliases: string[];
+
   @Prop({type: Number, default: 0})
   price: number;
 }

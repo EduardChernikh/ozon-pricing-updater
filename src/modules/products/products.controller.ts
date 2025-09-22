@@ -9,8 +9,8 @@ export class ProductsController {
 
   @HttpCode(200)
   @Post()
-  async create(@Body() dto: CreateProductDto) {
-    return await this.productsService.createProduct(dto);
+  async products(@Body() dto: CreateProductDto) {
+    return await this.productsService.updateProducts(dto);
   }
 
 

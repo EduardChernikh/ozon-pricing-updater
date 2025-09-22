@@ -1,28 +1,20 @@
-import { ArrayNotEmpty, IsArray, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ProductItemDto {
+  @IsString()
+  article: string;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  aliases: [string];
+}
 
 export class CreateProductDto {
   @IsArray()
   @ArrayNotEmpty()
-  @IsString({ each: true })
-  articles: [string];
+  @ValidateNested({ each: true })
+  @Type(() => ProductItemDto)
+  articles: ProductItemDto[];
 }
-
-
-// import { Type } from 'class-transformer';
-// import { IsArray, ArrayNotEmpty, IsString, ValidateNested } from 'class-validator';
-//
-// class ProductItemDto {
-//   @IsString()
-//   article: string;
-//
-//   @IsString()
-//   sku: string;
-// }
-//
-// export class CreateProductDto {
-//   @IsArray()
-//   @ArrayNotEmpty()
-//   @ValidateNested({ each: true })
-//   @Type(() => ProductItemDto)
-//   articles: ProductItemDto[];
-// }

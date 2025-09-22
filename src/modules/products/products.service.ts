@@ -11,14 +11,15 @@ export class ProductsService {
   ) {
   }
 
-  async createProduct(dto: CreateProductDto) {
+  async updateProducts(dto: CreateProductDto) {
     let bulkOps: any[] = [];
-    dto.articles.forEach(article => {
+    dto.articles.forEach(item => {
       bulkOps.push({
         updateOne: {
-          filter: { article: article },
+          filter: { article: item.article },
           update: {
-            $setOnInsert: { price: 0 }
+            $setOnInsert: { price: 0 },
+            $set: {aliases: item.aliases },
           },
           upsert: true
         },
