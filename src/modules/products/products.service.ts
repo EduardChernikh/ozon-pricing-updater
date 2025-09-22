@@ -29,6 +29,21 @@ export class ProductsService {
   }
 
   async getProductsPrices(dto: GetProductsPricesDto) {
+    let bulkOps: any[] = [];
+    dto.articles.forEach(article => {
+      bulkOps.push({
+        updateOne: {
+          filter: { article: article },
+          update: {
+            $setOnInsert: { price: 0 }
+          },
+          upsert: true
+        },
+      });
+    });
+
+    await this.productsRepo.bulkWrite(bulkOps);
+
     let products: any = await this.productsRepo.find({article: {$in: dto.articles}});
     const articlePriceMap = new Map<string, number>();
     products.forEach((product: any) => {
