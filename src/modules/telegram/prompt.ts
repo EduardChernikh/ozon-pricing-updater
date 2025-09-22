@@ -5,6 +5,8 @@ $$RAW_PRICES$$
 
 ========= END OF THE RAW TEXT=========
 
+Here is the list of products that is available. They are in format: "article; alias, alias2, alias3". Look for matches in both articles and aliases, but in result json use corresponding article.
+
 ========= AVAILABLE ARTICLES LIST =========
 
 $$ARTICLES$$

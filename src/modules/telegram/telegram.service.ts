@@ -57,7 +57,7 @@ export class TelegramService implements OnModuleInit {
     currentPrompt = currentPrompt.replace("$$RAW_PRICES$$", messageText);
 
     let articles: any = await this.productsRepo.find();
-    articles = articles.map((item: any) => item.article).join('\n');
+    articles = articles.map((item: any) => `${item.article}; ${item.aliases.join(", ")}`).join('\n');
 
     currentPrompt = currentPrompt.replace("$$ARTICLES$$", articles.length > 0 ? articles: "None");
 
