@@ -48,7 +48,10 @@ export class TelegramService implements OnModuleInit {
 
     if(messageText.includes('/start')) {
       return;
-    };
+    }
+
+    ctx.deleteMessage();
+    ctx.reply('Обрабатываю...')
 
     let currentPrompt = prompt;
     currentPrompt = currentPrompt.replace("$$RAW_PRICES$$", messageText);
@@ -64,12 +67,16 @@ export class TelegramService implements OnModuleInit {
       config: {
         httpOptions: {
           timeout: 300000,
-        }
+        },
+        temperature: 0
       }
     });
 
+    console.clear();
+    console.log(result.text)
+
     result = result.text;
-      result = result.replace('```json', '');
+    result = result.replace('```json', '');
     result = result.replace('```', '');
     result = result.replace('\n', '');
     result = result.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, "");
@@ -92,7 +99,7 @@ export class TelegramService implements OnModuleInit {
 
     await this.productsRepo.bulkWrite(bulkOps);
 
-    ctx.deleteMessage();
-    ctx.reply('Done.');
+
+    ctx.reply('Готово.');
   }
 }
