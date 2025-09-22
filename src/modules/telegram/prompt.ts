@@ -32,8 +32,5 @@ Example of the JSON output format:
         "price": 127200
     }
 ]
-
-or [] if there is no Articles in "AVAILABLE ARTICLES LIST" list.
-
 `;
 
