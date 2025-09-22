@@ -52,7 +52,11 @@ export class TelegramService implements OnModuleInit {
 
     let currentPrompt = prompt;
     currentPrompt = currentPrompt.replace("$$RAW_PRICES$$", messageText);
-    currentPrompt = currentPrompt.replace("$$ARTICLES$$", "None");
+
+    let articles: any = await this.productsRepo.find();
+    articles = articles.map((item: any) => item.article).join(', ');
+
+    currentPrompt = currentPrompt.replace("$$ARTICLES$$", articles.length > 0 ? articles: "None");
 
     let result = await this.ai.models.generateContent({
       model: "gemini-2.5-flash",
