@@ -6,13 +6,13 @@ class ProductItemDto {
   article: string;
 
   @IsArray()
-  @ArrayNotEmpty()
   @IsString({ each: true })
   aliases: [string];
 }
 
 export class CreateProductDto {
   @IsArray()
+  @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => ProductItemDto)
   products: ProductItemDto[];
