@@ -29,13 +29,17 @@ export class TelegramService implements OnModuleInit {
 
   async onModuleInit() {
     // @ts-ignore
-    this.bot = new Telegraf(this.config.get<string>('TELEGRAM_BOT_APIKEY'));
+    this.bot = new Telegraf(this.config.get<string>('TELEGRAM_BOT_APIKEY'), {handlerTimeout: 300000});
     await this.initBotListeners();
   }
 
   async initBotListeners(): Promise<void> {
     //Initialization command
     this.bot.on('text', this.onText.bind(this));
+
+    this.bot.catch((err: any, ctx: any) => {
+      console.error(`Encountered a timeout error for ${ctx.updateType}`, err);
+    });
 
     //Launch bot
     this.bot.launch()
