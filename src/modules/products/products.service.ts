@@ -18,7 +18,6 @@ export class ProductsService {
         updateOne: {
           filter: { article: item.article },
           update: {
-            $setOnInsert: { price: 0 },
             $set: {aliases: item.aliases, price: item.price || 0 },
           },
           upsert: true
