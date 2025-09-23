@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNumber, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ProductItemDto {
@@ -8,6 +8,10 @@ class ProductItemDto {
   @IsArray()
   @IsString({ each: true })
   aliases: [string];
+
+  @IsNumber()
+  @IsPositive()
+  price: number;
 }
 
 export class CreateProductDto {
