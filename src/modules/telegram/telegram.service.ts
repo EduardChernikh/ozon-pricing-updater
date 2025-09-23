@@ -101,7 +101,7 @@ export class TelegramService implements OnModuleInit {
 
     await this.productsRepo.bulkWrite(bulkOps);
 
-    await this.bot.deleteMessage(prevMessage.message_id)
+    await this.bot.telegram.deleteMessage(chatId, prevMessage.message_id);
     await this.bot.telegram.sendMessage(chatId, 'Готово 🫡');
   }
 }
