@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsArray, IsNumber, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ProductItemDto {
@@ -10,7 +10,7 @@ class ProductItemDto {
   aliases: [string];
 
   @IsNumber()
-  @IsPositive()
+  @IsOptional()
   price: number;
 }
 
