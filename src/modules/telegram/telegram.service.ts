@@ -55,8 +55,8 @@ export class TelegramService implements OnModuleInit {
       return;
     }
 
-    ctx.deleteMessage();
-    ctx.reply('Обрабатываю...')
+    await ctx.deleteMessage();
+    let prevMessage = await ctx.reply('Обрабатываю...')
 
     let currentPrompt = prompt;
     currentPrompt = currentPrompt.replace("$$RAW_PRICES$$", messageText);
@@ -101,7 +101,7 @@ export class TelegramService implements OnModuleInit {
 
     await this.productsRepo.bulkWrite(bulkOps);
 
-
-    await this.bot.telegram.sendMessage(chatId, messageText);
+    await this.bot.deleteMessage(prevMessage.message_id)
+    await this.bot.telegram.sendMessage(chatId, 'Готово 🫡');
   }
 }
