@@ -2,9 +2,13 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 import { ConfigService } from '@nestjs/config';
 import * as productRepository from '../db/product.repository';
-import { GoogleGenAI } from "@google/genai";
 import { prompt } from './prompt';
 import {jsonrepair} from "jsonrepair"
+
+import { VertexAI } from '@google-cloud/vertexai';
+import * as path from 'path';
+import * as fs from 'fs';
+
 
 interface MessageState {
   messageId: number;
@@ -15,15 +19,30 @@ interface MessageState {
 @Injectable()
 export class TelegramService implements OnModuleInit {
   bot: any;
-  ai: any;
+  vertex_ai: any;
+  generativeModel: any
 
   constructor(
     private readonly config: ConfigService,
     @Inject(productRepository.ProductRepository)
     private readonly productsRepo: productRepository.ProductRepositoryType,
   ) {
-    this.ai = new GoogleGenAI({
-      apiKey: this.config.get<string>("GEMINI_API_KEY"),
+    const keyFilePath = path.join(process.cwd(), 'environments/price-actualizer-475005-649257752563.json');
+    const serviceAccount = JSON.parse(fs.readFileSync(keyFilePath, 'utf8'));
+    this.vertex_ai = new VertexAI({
+      project: 'price-actualizer-475005',
+      location: 'europe-west1',
+      googleAuthOptions: {
+        credentials: {
+          client_email: serviceAccount.client_email,
+          private_key: serviceAccount.private_key,
+        }
+      }
+    });
+
+    const model = 'gemini-2.5-flash';
+    this.generativeModel = this.vertex_ai.getGenerativeModel({
+      model: model,
     });
   }
 
@@ -63,45 +82,63 @@ export class TelegramService implements OnModuleInit {
 
     let articles: any = await this.productsRepo.find();
     articles = articles.map((item: any) => `${item.article}; ${item.aliases.join(", ")}`).join('\n');
-
     currentPrompt = currentPrompt.replace("$$ARTICLES$$", articles.length > 0 ? articles: "None");
+    let finalResult = await this.generatePricesList(currentPrompt);
 
-    let result = await this.ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: currentPrompt,
-      config: {
-        httpOptions: {
-          timeout: 300000,
-        },
-        temperature: 0
-      }
-    });
+    if(Array.isArray(finalResult) && finalResult.length > 0) {
+      let bulkOps: any[] = finalResult.map((item: any) => {
+        if(!item.article) return;
 
-    result = result.text;
-    result = result.replace('```json', '');
-    result = result.replace('```', '');
-    result = result.replace('\n', '');
-    result = result.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, "");
-    result = jsonrepair(result);
-    let finalResult = JSON.parse(result);
-
-    let bulkOps: any[] = finalResult.map((item: any) => {
-      if(!item.article) return;
-
-      return {
-        updateOne: {
-          filter: { article: item.article },
-          update: {
-            $set: { price: parseInt(item.price) }
+        return {
+          updateOne: {
+            filter: { article: item.article },
+            update: {
+              $set: { price: parseInt(item.price) }
+            },
+            upsert: true
           },
-          upsert: true
-        },
+        }
+      });
+
+      await this.productsRepo.bulkWrite(bulkOps);
+
+      await this.bot.telegram.deleteMessage(chatId, prevMessage.message_id);
+      await this.bot.telegram.sendMessage(chatId, 'Готово 🫡');
+    } else {
+      await this.bot.telegram.deleteMessage(chatId, prevMessage.message_id);
+      await this.bot.telegram.sendMessage(chatId, 'Модели не удалось обработать ответ 🤷');
+    }
+  }
+
+  async generatePricesList(prompt: string) {
+    const req = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generation_config: {
+        temperature: 0,
       }
-    });
+    };
 
-    await this.productsRepo.bulkWrite(bulkOps);
+    try {
+      const resp = await this.generativeModel.generateContent(req);
 
-    await this.bot.telegram.deleteMessage(chatId, prevMessage.message_id);
-    await this.bot.telegram.sendMessage(chatId, 'Готово 🫡');
+      let resultText = '';
+      if (resp.response && resp.response.candidates && resp.response.candidates.length > 0 && resp.response.candidates[0].content.parts.length > 0) {
+        resultText = resp.response.candidates[0].content.parts[0].text;
+      } else {
+        // Обработка случая, когда модель вернула пустой ответ
+        throw new Error("Не удалось получить контент от модели Vertex AI.");
+      }
+
+      resultText = resultText.replace('```json', '');
+      resultText = resultText.replace('```', '');
+      resultText = resultText.replace(/\n/g, ''); // Заменено на /g для удаления всех переносов
+      resultText = resultText.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, "");
+      const repairedJson = jsonrepair(resultText);
+      return JSON.parse(repairedJson);
+
+    } catch (error) {
+      console.error('Произошла ошибка при вызове API:', error);
+      return []
+    }
   }
 }
