@@ -15,6 +15,9 @@ export class Product {
 
   @Prop({type: Number, default: 0})
   price: number;
+
+  @Prop({type: String, required: false, default: null})
+  category: string;
 }
 
 let _schema = SchemaFactory.createForClass(Product);
