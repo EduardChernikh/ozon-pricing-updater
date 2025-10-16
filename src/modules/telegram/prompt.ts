@@ -17,9 +17,6 @@ Please extract relevant information and fill in the following JSON fields. Do no
 
 Expected item JSON format:
 {
-    "raw": "",
-    "model": "",
-    "country": "",
     "article": "",
     "price": 0
 }
@@ -27,10 +24,7 @@ Expected item JSON format:
 Example of the JSON output format:
 [
     {
-        "raw": "16 Pro Max 1TB Desert 🇦🇪 127200 🚙",
-        "model": "16 Pro Max 1TB Desert",
         "article": "iPhone 16 Pro Max 1 Tb Desert"
-        "country": "🇦🇪",
         "price": 127200
     }
 ]

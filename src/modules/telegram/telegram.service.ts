@@ -16,6 +16,23 @@ interface MessageState {
   keepMessage?: boolean;
 }
 
+const excludedItems = [
+  "Tab",
+  "Honor",
+  "GARMIN",
+  "Pixel",
+  "Redmi",
+  "Xiaomi",
+  "Note",
+  "POCO",
+  "Vivo",
+  "Realme",
+  "ASIS",
+  "dapter",
+  "даптер",
+  "Переходник"
+]
+
 @Injectable()
 export class TelegramService implements OnModuleInit {
   bot: any;
@@ -67,12 +84,14 @@ export class TelegramService implements OnModuleInit {
   }
 
   async onText(ctx: any): Promise<void> {
-    const messageText = ctx.message.text;
+    let messageText = ctx.message.text;
     const chatId = ctx.chat.id;
 
     if(messageText.includes('/start')) {
       return;
     }
+
+    messageText = this.filterIncomingText(messageText);
 
     await ctx.deleteMessage();
     let prevMessage = await ctx.reply('Обрабатываю...')
@@ -140,5 +159,51 @@ export class TelegramService implements OnModuleInit {
       console.error('Произошла ошибка при вызове API:', error);
       return []
     }
+  }
+
+  private filterIncomingText(text: string) {
+    let normalizedArray = text.split('\n')
+      .filter(item => {
+        let exclude = false;
+        for (const eItem of excludedItems) {
+          if(!exclude && item.toLowerCase().includes(eItem.toLowerCase())) {
+            exclude = true;
+          }
+        }
+
+        return !exclude;
+      })
+      .map(this.normalizePreserveFlagsLine)
+      .filter(item => item.length > 0 && !/^\d+$/.test(item))
+      .filter(item => {
+        let exclude = false;
+        let rg = /(\(\s?\d{1,3}\s?\).+$)/gi
+        let rg2 = /\d{4,}/gi
+        let rg3 = /^\(.+\)$/gi
+        if(rg.test(item) || !rg2.test(item) || rg3.test(item))
+          exclude = true;
+
+        return !exclude;
+      })
+
+    return normalizedArray.join('\n');
+  }
+
+  private normalizePreserveFlagsLine(line) {
+    const flags: any[] = [];
+    const withPlaceholders = line.replace(/([\u{1F1E6}-\u{1F1FF}]{2})/gu, (m: any) => {
+      flags.push(m);
+      return `__FLAG_${flags.length - 1}__`;
+    });
+
+    let t = withPlaceholders.replace(/([0-9])\uFE0F?\u20E3/g, '$1');
+    //@ts-ignore
+    t = t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
+    t = t.replace(/[^a-zA-Z0-9()\/\[\]{}\s\u{1F1E6}-\u{1F1FF}_]+/gu, '');
+    t = t.replace(/__FLAG_(\d+)__/g, (_, idx) => flags[Number(idx)] || '');
+    t = t.replace(/(\(\s?От\s?\d{1,3}\s?шт\s?\).+$)/gm, '');
+    t = t.replace(/\s{2,}/g, ' ').trim();
+
+    return t;
   }
 }
